@@ -28,9 +28,9 @@ jobs:
             name: Deploy to S3
             command: |
                 if [ "${CIRCLE_BRANCH}" == "develop" ]; then
-                    aws --region us-east-1 s3 sync dist s3://mihai-s3-upload-testing-dev/ --delete
+                    aws --region us-east-1 s3 sync dist s3://mihai-s3-upload-testing/ --delete
                 elif [ "${CIRCLE_BRANCH}" == "staging" ]; then
-                    aws --region us-east-1 s3 sync dist s3://mihai-s3-upload-testing-qa/ --delete
+                    aws --region us-east-1 s3 sync dist s3://mihai-s3-upload-testing/ --delete
                 elif [ "${CIRCLE_BRANCH}" == "master" ]; then
                     aws --region us-east-1 s3 sync dist s3://mihai-s3-upload-testing/ --delete
                 fi
