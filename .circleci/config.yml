@@ -4,6 +4,28 @@
 #
 version: 2
 jobs:
+  deploy:
+      docker:
+        - image: circleci/node:latest
+      working_directory: ~/repo
+      steps:
+        - run:
+            name: Install awscli
+            command: sudo apt-get -y -qq install awscli
+        - run:
+            name: Setting Signature Version 4 for S3 Request Authentication
+            command: aws configure set default.s3.signature_version s3v4
+        # Deploy to the S3 bucket corresponding to the current branch
+        - run:
+            name: Deploy to S3
+            command: |
+                if [ "${CIRCLE_BRANCH}" == "develop" ]; then
+                    aws --region us-east-1 s3 sync dist s3://mihai-s3-upload-testing-dev/ --delete
+                elif [ "${CIRCLE_BRANCH}" == "staging" ]; then
+                    aws --region us-east-1 s3 sync dist s3://mihai-s3-upload-testing-qa/ --delete
+                elif [ "${CIRCLE_BRANCH}" == "master" ]; then
+                    aws --region us-east-1 s3 sync dist s3://mihai-s3-upload-testing/ --delete
+                fi
   build:
     docker:
       # specify the version you desire here
@@ -35,5 +57,32 @@ jobs:
 
       # run tests!
       - run: yarn test
-
+      # Build project with different configuration based on
+      # the current branch
+      - run:
+          name: Building
+          command: |
+              if [ "${CIRCLE_BRANCH}" == "staging" ]; then
+                  yarn build-qa
+              elif [ "${CIRCLE_BRANCH}" == "master" ]; then
+                  yarn build
+              else
+                  yarn build-dev
+              fi
+      # Cache the dist folder for the deploy job
+      - save_cache:
+          key: v1-dist-{{ .Environment.CIRCLE_BRANCH }}-{{ .Environment.CIRCLE_SHA1 }}
+          paths:
+              - dist
+workflows:
+  version: 2
+  build-deploy:
+    jobs:
+      - build
+      - deploy:
+          requires:
+            - build
+          filters:
+            branches:
+              only: master
 
