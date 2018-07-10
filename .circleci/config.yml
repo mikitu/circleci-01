@@ -14,9 +14,9 @@ jobs:
             name: Show current branch
             command: echo ${CIRCLE_BRANCH}
         # Restore cache from the build job which contains the
-        # dist folder that needs to be deployed
+        # build folder that needs to be deployed
         - restore_cache:
-            key: v1-dist-{{ .Environment.CIRCLE_BRANCH }}-{{ .Environment.CIRCLE_SHA1 }}
+            key: v1-build-{{ .Environment.CIRCLE_BRANCH }}-{{ .Environment.CIRCLE_SHA1 }}
         - run:
             name: Install awscli
             command: apt-get -yqq update && apt-get -yqq install python-pip && pip install awscli
@@ -28,11 +28,11 @@ jobs:
             name: Deploy to S3
             command: |
                 if [ "${CIRCLE_BRANCH}" == "develop" ]; then
-                    aws --region us-east-1 s3 sync dist s3://mihai-s3-upload-testing/ --delete
+                    aws --region us-east-1 s3 sync build s3://mihai-s3-upload-testing-dev/ --delete
                 elif [ "${CIRCLE_BRANCH}" == "staging" ]; then
-                    aws --region us-east-1 s3 sync dist s3://mihai-s3-upload-testing/ --delete
+                    aws --region us-east-1 s3 sync build s3://mihai-s3-upload-testing-qa/ --delete
                 elif [ "${CIRCLE_BRANCH}" == "master" ]; then
-                    aws --region us-east-1 s3 sync dist s3://mihai-s3-upload-testing/ --delete
+                    aws --region us-east-1 s3 sync build s3://mihai-s3-upload-testing/ --delete
                 fi
   build:
     docker:
@@ -76,11 +76,11 @@ jobs:
               else
                   yarn build
               fi
-      # Cache the dist folder for the deploy job
+      # Cache the build folder for the deploy job
       - save_cache:
-          key: v1-dist-{{ .Environment.CIRCLE_BRANCH }}-{{ .Environment.CIRCLE_SHA1 }}
+          key: v1-build-{{ .Environment.CIRCLE_BRANCH }}-{{ .Environment.CIRCLE_SHA1 }}
           paths:
-              - dist
+              - build
 workflows:
   version: 2
   build-deploy:
