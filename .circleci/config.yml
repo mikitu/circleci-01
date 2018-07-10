@@ -19,7 +19,7 @@ jobs:
             key: v1-dist-{{ .Environment.CIRCLE_BRANCH }}-{{ .Environment.CIRCLE_SHA1 }}
         - run:
             name: Install awscli
-            command: apt-get -y -qq install python-pip && pip install awscli
+            command: apt-get -yqq update && apt-get -yqq install python-pip && pip install awscli
         - run:
             name: Setting Signature Version 4 for S3 Request Authentication
             command: aws configure set default.s3.signature_version s3v4
