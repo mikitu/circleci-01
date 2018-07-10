@@ -63,11 +63,11 @@ jobs:
           name: Building
           command: |
               if [ "${CIRCLE_BRANCH}" == "staging" ]; then
-                  yarn build-qa
+                  yarn build
               elif [ "${CIRCLE_BRANCH}" == "master" ]; then
                   yarn build
               else
-                  yarn build-dev
+                  yarn build
               fi
       # Cache the dist folder for the deploy job
       - save_cache:
